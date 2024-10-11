@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 void main() => runApp(const HomePage());
 
@@ -116,7 +117,7 @@ class _TranslationHomeState extends State<TranslationHome> {
               onPressed: () {
                 _translateText(_inputController.text);
               },
-              child: Text('Translate'),
+              child: const Text('Translate'),
             ),
             const SizedBox(height: 16),
 
