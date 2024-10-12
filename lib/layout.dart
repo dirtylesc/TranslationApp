@@ -58,47 +58,75 @@ class _AppLayoutState extends State<AppLayout> {
         children: _pages,
       ),
       bottomNavigationBar: Container(
-        color: Colors.white,
-        child: BottomNavigationBar(
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.mic),
-              label: 'Chat',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.camera),
-              label: 'Camera',
-            ),
-            BottomNavigationBarItem(
-              icon: GestureDetector(
-                onTap: () {
-                  // Không làm gì ở đây
-                },
-                child: const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.blue,
-                  child: Icon(Icons.translate, color: Colors.white),
+          height: 80,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, 0.15),
+                spreadRadius: 1,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: BottomNavigationBar(
+                  backgroundColor: const Color.fromRGBO(255, 251, 254, 1),
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.mic),
+                      label: 'Chat',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.camera),
+                      label: 'Camera',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: SizedBox(
+                        width: 32,
+                        height: 32,
+                      ),
+                      label: '',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.history),
+                      label: 'History',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.star),
+                      label: 'Favourite',
+                    ),
+                  ],
+                  currentIndex: _selectedIndex,
+                  selectedItemColor: Colors.blueAccent,
+                  unselectedItemColor: Colors.black,
+                  showUnselectedLabels: true,
+                  onTap: _onItemTapped, // Sử dụng phương thức cập nhật
+                  type: BottomNavigationBarType.fixed,
                 ),
               ),
-              label: '',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.history),
-              label: 'History',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.star),
-              label: 'Favourite',
-            ),
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.blueAccent,
-          unselectedItemColor: Colors.black,
-          showUnselectedLabels: true,
-          onTap: _onItemTapped, // Sử dụng phương thức cập nhật
-          type: BottomNavigationBarType.fixed,
-        ),
-      ),
+              GestureDetector(
+                onTap: () {
+                  // Handle tap event
+                },
+                child: const CircleAvatar(
+                  radius: 26, // Adjust the radius as needed
+                  backgroundColor: Colors.blue,
+                  child: Icon(
+                    Icons.translate,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          )),
     );
   }
 }

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:translation_app/splash.dart';
-import 'package:translation_app/home.dart';
-import 'package:translation_app/camera.dart';
-import 'package:translation_app/history.dart';
-import 'package:translation_app/favorite.dart';
 import 'package:translation_app/layout.dart';
 
 void main() => runApp(const TranslationApp());
