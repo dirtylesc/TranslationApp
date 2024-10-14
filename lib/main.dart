@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:translation_app/splash.dart';
 import 'package:translation_app/Database.dart';
 import 'package:translation_app/layout.dart';
-import 'package:translation_app/splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +14,7 @@ void main() async {
   } else {
     print("Database initialization failed.");
   }
+
   return runApp(const TranslationApp());
 }
 
