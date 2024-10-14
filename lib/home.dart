@@ -1,10 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+import 'package:translation_app/speech_to_text.dart';
 
 import 'package:translation_app/text_to_speech.dart';
+import 'package:translator/translator.dart';
 
 void main() => runApp(const HomePage());
 
@@ -30,48 +29,49 @@ class TranslationHome extends StatefulWidget {
 
 class _TranslationHomeState extends State<TranslationHome> {
   final TextEditingController _sourcecInputController = TextEditingController();
+  final translator = GoogleTranslator();
+  final TTS _flutterTTS = TTS();
+  final STT _flutterSTT = STT();
+
   String _translatedText = '';
   bool _isTranslated = false;
+  bool _isVoiceStarting = false;
 
   final List<Map<String, String>> _languages = [
-    {'name': 'English', 'img': 'images/united-states-flag.png', 'code': 'en'},
-    {'name': 'Tiếng Việt', 'img': 'images/vietnam-flag.png', 'code': 'vi'},
-    {'name': '한글', 'img': 'images/korean-flag.png', 'code': 'ko'},
-    // Add more languages if needed
+    {
+      'name': 'English',
+      'img': 'images/united-states-flag.png',
+      'code': 'en',
+      'language': 'en-US'
+    },
+    {
+      'name': 'Tiếng Việt',
+      'img': 'images/vietnam-flag.png',
+      'code': 'vi',
+      'language': 'vi-VN'
+    },
+    {
+      'name': '한글',
+      'img': 'images/korean-flag.png',
+      'code': 'ko',
+      'language': 'ko-KR'
+    },
   ];
 
   late Map<String, String> _sourceLanguage = _languages[0];
   late Map<String, String> _targetLanguage = _languages[1];
 
   Future<void> _translateText(String text) async {
+    if (text.isEmpty) return;
+
     setState(() {
       _isTranslated = false;
     });
 
-    final apiUrl =
-        'https://api.mymemory.translated.net/get?q=$text&langpair=${_sourceLanguage['code']}|${_targetLanguage['code']}';
+    var translation = await translator.translate(_sourcecInputController.text,
+        from: _sourceLanguage['code']!, to: _targetLanguage['code']!);
 
-    final response = await http.get(Uri.parse(apiUrl));
-    if (response.statusCode != 200) {
-      throw Exception('Failed to load translation');
-    }
-
-    final data = json.decode(response.body);
-
-    String bestTranslation = data['responseData']['translatedText'];
-    if (bestTranslation.contains("object")) {
-      num highestMatchScore = 0;
-
-      if (data['matches'] != null) {
-        for (var match in data['matches']) {
-          if (bestTranslation.contains("object") ||
-              match['match'] > highestMatchScore) {
-            highestMatchScore = match['match'];
-            bestTranslation = match['translation'];
-          }
-        }
-      }
-    }
+    String bestTranslation = translation.text;
 
     setState(() {
       _translatedText = bestTranslation;
@@ -80,9 +80,26 @@ class _TranslationHomeState extends State<TranslationHome> {
   }
 
   Future<void> _voiceText(String text, String? language) async {
-    if (language == null) return;
+    final isPlaying = _flutterTTS.isPlaying;
 
-    await TTSExample(text: text, language: language).speak();
+    if (isPlaying) {
+      await _flutterTTS.stop();
+
+      if (_flutterTTS.prevLanguage == language) {
+        return;
+      }
+    }
+
+    if (language == null || text.isEmpty) return;
+    await _flutterTTS.speak(text, language);
+  }
+
+  Future<void> _textVoice() async {
+    setState(() {
+      _isVoiceStarting = !_isVoiceStarting;
+    });
+
+    await _flutterSTT.startListening();
   }
 
   @override
@@ -113,8 +130,8 @@ class _TranslationHomeState extends State<TranslationHome> {
                     children: [
                       Image.asset(
                         _sourceLanguage['img']!,
-                        width: 24, // Set width for flag images
-                        height: 24, // Set height for flag images
+                        width: 24,
+                        height: 24,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -137,20 +154,19 @@ class _TranslationHomeState extends State<TranslationHome> {
                               child: Text(
                                 language['name']!,
                                 style: const TextStyle(
-                                  fontSize: 16, // Font size for dropdown items
+                                  fontSize: 16,
                                 ),
                               ),
                             );
                           }).toList(),
-                          isExpanded:
-                              true, // Make dropdown expand to fill available space
+                          isExpanded: true,
                           underline: Container(
                             height: 1,
-                            color: Colors.grey[400], // Color of the underline
+                            color: Colors.grey[400],
                           ),
                           style: const TextStyle(
-                            color: Colors.black, // Color of the selected item
-                            fontSize: 16, // Font size of the selected item
+                            color: Colors.black,
+                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -171,8 +187,8 @@ class _TranslationHomeState extends State<TranslationHome> {
                       const SizedBox(width: 16),
                       Image.asset(
                         _targetLanguage['img']!,
-                        width: 24, // Set width for flag images
-                        height: 24, // Set height for flag images
+                        width: 24,
+                        height: 24,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -195,20 +211,19 @@ class _TranslationHomeState extends State<TranslationHome> {
                               child: Text(
                                 language['name']!,
                                 style: const TextStyle(
-                                  fontSize: 16, // Font size for dropdown items
+                                  fontSize: 16,
                                 ),
                               ),
                             );
                           }).toList(),
-                          isExpanded:
-                              true, // Make dropdown expand to fill available space
+                          isExpanded: true,
                           underline: Container(
                             height: 1,
-                            color: Colors.grey[400], // Color of the underline
+                            color: Colors.grey[400],
                           ),
                           style: const TextStyle(
-                            color: Colors.black, // Color of the selected item
-                            fontSize: 16, // Font size of the selected item
+                            color: Colors.black,
+                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -245,19 +260,25 @@ class _TranslationHomeState extends State<TranslationHome> {
                                       fontWeight: FontWeight.bold)),
                               const SizedBox(width: 4),
                               IconButton(
-                                color: const Color.fromRGBO(0, 51, 102, 1),
-                                icon: const Icon(Icons.volume_down_outlined),
-                                onPressed: () => {
-                                  _voiceText(_sourcecInputController.text,
-                                      _sourceLanguage['code'])
-                                },
-                              )
+                                  color: const Color.fromRGBO(0, 51, 102, 1),
+                                  icon: const Icon(Icons.volume_down_outlined),
+                                  onPressed: () {
+                                    _voiceText(_sourcecInputController.text,
+                                        _sourceLanguage['language']);
+                                  })
                             ],
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
                             onPressed: () {
-                              // Thêm chức năng đóng giao diện
+                              if (_sourcecInputController.text.isNotEmpty) {
+                                _sourcecInputController.clear();
+                              }
+
+                              setState(() {
+                                _isTranslated = false;
+                                _translatedText = "";
+                              });
                             },
                           ),
                         ],
@@ -282,16 +303,18 @@ class _TranslationHomeState extends State<TranslationHome> {
                         children: [
                           InkWell(
                             onTap: () {
-                              // Thêm chức năng nhận diện giọng nói
+                              _textVoice();
                             },
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                  color: const Color.fromRGBO(0, 51, 102, 1),
+                                  color: _isVoiceStarting
+                                      ? Colors.red
+                                      : Color.fromRGBO(0, 51, 102, 1),
                                   borderRadius: BorderRadius.circular(100)),
-                              child: const Icon(
+                              child: Icon(
                                 color: Colors.white,
-                                Icons.mic,
+                                _isVoiceStarting ? Icons.square : Icons.mic,
                               ),
                             ),
                           ),
@@ -352,7 +375,7 @@ class _TranslationHomeState extends State<TranslationHome> {
                                   icon: const Icon(Icons.volume_down_outlined),
                                   onPressed: () => {
                                     _voiceText(_translatedText,
-                                        _targetLanguage['code'])
+                                        _targetLanguage['language'])
                                   },
                                 )
                               ],
