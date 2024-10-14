@@ -72,4 +72,14 @@ class DBProvider {
       },
     );
   }
+
+  Future<int> insertTranslation(Map<String, dynamic> translationData) async {
+    final db = await database;
+    return await db.insert('translations', translationData);
+  }
+
+  Future<List<Map<String, dynamic>>> getTranslations(int userId) async {
+    final db = await database;
+    return await db.query('translations', where: 'user_id = ?', whereArgs: [userId]);
+  }
 }
