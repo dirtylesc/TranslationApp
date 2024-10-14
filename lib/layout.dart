@@ -38,21 +38,7 @@ class _AppLayoutState extends State<AppLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Translation App'),
-        backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
-        titleTextStyle: const TextStyle(color: Colors.white),
-        leading: Navigator.canPop(context)
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-                },
-              )
-            : null,
-      ),
+      appBar: _AppBar(selectedIndex: _selectedIndex),
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
@@ -129,4 +115,78 @@ class _AppLayoutState extends State<AppLayout> {
           )),
     );
   }
+}
+
+class _AppBar extends StatelessWidget implements PreferredSizeWidget {
+  final int selectedIndex;
+
+  const _AppBar({required this.selectedIndex});
+
+  PreferredSizeWidget _buildAppBar() {
+    switch (selectedIndex) {
+      case 0: // Home Page
+        return AppBar(
+          title: const Text('Translation App'),
+          titleTextStyle: const TextStyle(color: Colors.white),
+          backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
+          leading: null,
+        );
+      case 1: // Camera Page
+        return AppBar(
+          title: const Text('Camera'),
+          titleTextStyle: const TextStyle(color: Colors.white),
+          backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                // Handle settings button
+              },
+            ),
+          ],
+        );
+      case 3: // History Page
+        return AppBar(
+          backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'History',
+                style: TextStyle(color: Colors.white),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Handle clear all action
+                  print("Clear all history");
+                },
+                child: const Text(
+                  'Clear all',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          automaticallyImplyLeading: false,
+        );
+      case 4: // Favorite Page
+        return AppBar(
+          title: const Text('Favorites'),
+          backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
+        );
+      default:
+        return AppBar(
+          title: const Text('Translation App'),
+          backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildAppBar();
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
