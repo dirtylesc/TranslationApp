@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:translation_app/database.dart';
 import 'package:translation_app/speech_to_text.dart';
 
 import 'package:translation_app/text_to_speech.dart';
@@ -72,6 +73,14 @@ class _TranslationHomeState extends State<TranslationHome> {
         from: _sourceLanguage['code']!, to: _targetLanguage['code']!);
 
     String bestTranslation = translation.text;
+
+    await DBProvider.db.insertTranslation({
+      'user_id': 123,
+      'source_text': _sourcecInputController.text,
+      'source_language': _sourceLanguage['code'],
+      'translated_text': bestTranslation,
+      'target_language': _targetLanguage['code'],
+    });
 
     setState(() {
       _translatedText = bestTranslation;
