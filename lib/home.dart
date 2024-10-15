@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:translation_app/database.dart';
 import 'package:translation_app/speech_to_text.dart';
-
 import 'package:translation_app/text_to_speech.dart';
 import 'package:translator/translator.dart';
 
@@ -76,7 +75,6 @@ class _TranslationHomeState extends State<TranslationHome> {
     String bestTranslation = translation.text;
 
     int id = await DBProvider.db.insertTranslation({
-      'user_id': 123,
       'source_text': _sourcecInputController.text,
       'source_language': _sourceLanguage['code'],
       'translated_text': bestTranslation,
@@ -340,7 +338,7 @@ class _TranslationHomeState extends State<TranslationHome> {
                               decoration: BoxDecoration(
                                   color: _isVoiceStarting
                                       ? Colors.red
-                                      : Color.fromRGBO(0, 51, 102, 1),
+                                      : const Color.fromRGBO(0, 51, 102, 1),
                                   borderRadius: BorderRadius.circular(100)),
                               child: Icon(
                                 color: Colors.white,

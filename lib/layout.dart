@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:translation_app/camera.dart';
+import 'package:translation_app/database.dart';
 import 'package:translation_app/favorite.dart';
 import 'package:translation_app/history.dart';
 import 'package:translation_app/home.dart';
@@ -30,6 +31,7 @@ class _AppLayoutState extends State<AppLayout> {
 
     if (_selectedIndex == index) return;
 
+    (context as Element).markNeedsBuild();
     setState(() {
       _selectedIndex = index;
     });
@@ -122,7 +124,34 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 
   const _AppBar({required this.selectedIndex});
 
-  PreferredSizeWidget _buildAppBar() {
+  void _showClearAllDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận'),
+          content: const Text('Bạn có chắc chắn muốn xóa tất cả lịch sử?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                DBProvider.db.deleteAllTranslations();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Xóa tất cả'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     switch (selectedIndex) {
       case 0: // Home Page
         return AppBar(
@@ -157,8 +186,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               TextButton(
                 onPressed: () {
-                  // Handle clear all action
-                  print("Clear all history");
+                  _showClearAllDialog(context);
                 },
                 child: const Text(
                   'Clear all',
@@ -171,8 +199,17 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
         );
       case 4: // Favorite Page
         return AppBar(
-          title: const Text('Favorites'),
           backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
+          title: const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Favorite',
+                style: TextStyle(color: Colors.white),
+              )
+            ],
+          ),
+          automaticallyImplyLeading: false,
         );
       default:
         return AppBar(
@@ -184,7 +221,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _buildAppBar();
+    return _buildAppBar(context);
   }
 
   @override
