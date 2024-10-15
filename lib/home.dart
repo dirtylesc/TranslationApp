@@ -35,6 +35,7 @@ class _TranslationHomeState extends State<TranslationHome> {
   final STT _flutterSTT = STT();
 
   String _translatedText = '';
+  late Map<String, dynamic> _currentTranslation;
   bool _isTranslated = false;
   bool _isVoiceStarting = false;
 
@@ -74,7 +75,7 @@ class _TranslationHomeState extends State<TranslationHome> {
 
     String bestTranslation = translation.text;
 
-    await DBProvider.db.insertTranslation({
+    int id = await DBProvider.db.insertTranslation({
       'user_id': 123,
       'source_text': _sourcecInputController.text,
       'source_language': _sourceLanguage['code'],
@@ -82,10 +83,30 @@ class _TranslationHomeState extends State<TranslationHome> {
       'target_language': _targetLanguage['code'],
     });
 
+    _currentTranslation = (await DBProvider.db.getTranslation(id))!;
+
     setState(() {
       _translatedText = bestTranslation;
       _isTranslated = true;
     });
+  }
+
+  Future<void> _updateMarkTranslation() async {
+    if (_currentTranslation.isEmpty) return;
+
+    int id = await DBProvider.db.updateTranslation(_currentTranslation['id'], {
+      ..._currentTranslation,
+      'is_marked': _currentTranslation['is_marked'] == 1 ? 0 : 1
+    });
+
+    if (id > 0) {
+      setState(() {
+        _currentTranslation = {
+          ..._currentTranslation,
+          'is_marked': _currentTranslation['is_marked'] == 1 ? 0 : 1
+        };
+      });
+    }
   }
 
   Future<void> _voiceText(String text, String? language) async {
@@ -426,8 +447,12 @@ class _TranslationHomeState extends State<TranslationHome> {
                             ),
                             IconButton(
                               color: const Color.fromRGBO(0, 51, 102, 1),
-                              icon: const Icon(Icons.star_border_outlined),
-                              onPressed: () => {},
+                              icon: Icon(
+                                _currentTranslation['is_marked'] == 1
+                                    ? Icons.star
+                                    : Icons.star_outline,
+                              ),
+                              onPressed: () => {_updateMarkTranslation()},
                             )
                           ],
                         ),

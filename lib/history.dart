@@ -21,6 +21,13 @@ class _HistoryPageState extends State<HistoryPage> {
     setState(() {});
   }
 
+  Future<void> _updateMarkTranslation(int id, Map<String, dynamic> data) async {
+    await DBProvider.db.updateTranslation(
+        id, {...data, 'is_marked': data['is_marked'] == 1 ? 0 : 1});
+
+    _loadTranslations();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -106,12 +113,17 @@ class _HistoryPageState extends State<HistoryPage> {
                                     top: 0,
                                     right: 0,
                                     child: IconButton(
-                                      icon: const Icon(
-                                        Icons.star,
-                                        color: Color.fromRGBO(0, 51, 102,
+                                      icon: Icon(
+                                        translation['is_marked'] == 1
+                                            ? Icons.star
+                                            : Icons.star_outline,
+                                        color: const Color.fromRGBO(0, 51, 102,
                                             1), // Use your preferred color
                                       ),
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        _updateMarkTranslation(
+                                            translation['id'], translation);
+                                      },
                                     ),
                                   )
                                 ],

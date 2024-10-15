@@ -54,6 +54,7 @@ class DBProvider {
           source_language VARCHAR(5) NOT NULL,
           translated_text TEXT NOT NULL,
           target_language VARCHAR(5) NOT NULL,
+          is_marked BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
@@ -73,13 +74,32 @@ class DBProvider {
     );
   }
 
+  Future<Map<String, dynamic>?> getTranslation(int id) async {
+    final db = await database;
+    return (await db.query('translations', where: 'id = ?', whereArgs: [id]))
+        .firstOrNull;
+  }
+
   Future<int> insertTranslation(Map<String, dynamic> translationData) async {
     final db = await database;
     return await db.insert('translations', translationData);
   }
 
+  Future<int> updateTranslation(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db
+        .update('translations', data, where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<List<Map<String, dynamic>>> getTranslations(int userId) async {
     final db = await database;
-    return await db.query('translations', where: 'user_id = ?', whereArgs: [userId]);
+    return await db
+        .query('translations', where: 'user_id = ?', whereArgs: [userId]);
+  }
+
+  Future<List<Map<String, dynamic>>> getMarkedTranslations(int userId) async {
+    final db = await database;
+    return await db.query('translations',
+        where: 'user_id = ? AND is_marked = ?', whereArgs: [userId, 1]);
   }
 }
