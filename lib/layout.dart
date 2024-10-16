@@ -14,14 +14,10 @@ class AppLayout extends StatefulWidget {
 
 class _AppLayoutState extends State<AppLayout> {
   int _selectedIndex = 0;
-
-  // List of pages corresponding to the bottom navigation items
   final List<Widget> _pages = [
     const HomePage(),
     const CameraPage(),
     const SizedBox(),
-    const HistoryPage(),
-    const FavoritePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -32,6 +28,11 @@ class _AppLayoutState extends State<AppLayout> {
     if (_selectedIndex == index) return;
 
     (context as Element).markNeedsBuild();
+
+    _setSelectedIndex(index);
+  }
+
+  void _setSelectedIndex(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -42,8 +43,12 @@ class _AppLayoutState extends State<AppLayout> {
     return Scaffold(
       appBar: _AppBar(selectedIndex: _selectedIndex),
       body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+        index: _selectedIndex == 3 || _selectedIndex == 4 ? 3 : _selectedIndex,
+        children: [
+          ..._pages,
+          if (_selectedIndex == 3) const HistoryPage(),
+          if (_selectedIndex == 4) const FavoritePage(),
+        ],
       ),
       bottomNavigationBar: Container(
           height: 80,
@@ -96,16 +101,14 @@ class _AppLayoutState extends State<AppLayout> {
                   selectedItemColor: Colors.blueAccent,
                   unselectedItemColor: Colors.black,
                   showUnselectedLabels: true,
-                  onTap: _onItemTapped, // Sử dụng phương thức cập nhật
+                  onTap: _onItemTapped,
                   type: BottomNavigationBarType.fixed,
                 ),
               ),
               GestureDetector(
-                onTap: () {
-                  // Handle tap event
-                },
+                onTap: () {},
                 child: const CircleAvatar(
-                  radius: 26, // Adjust the radius as needed
+                  radius: 26,
                   backgroundColor: Colors.blue,
                   child: Icon(
                     Icons.translate,
@@ -153,14 +156,14 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     switch (selectedIndex) {
-      case 0: // Home Page
+      case 0:
         return AppBar(
           title: const Text('Translation App'),
           titleTextStyle: const TextStyle(color: Colors.white),
           backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
           leading: null,
         );
-      case 1: // Camera Page
+      case 1:
         return AppBar(
           title: const Text('Camera'),
           titleTextStyle: const TextStyle(color: Colors.white),
@@ -168,13 +171,11 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
-              onPressed: () {
-                // Handle settings button
-              },
+              onPressed: () {},
             ),
           ],
         );
-      case 3: // History Page
+      case 3:
         return AppBar(
           backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
           title: Row(
@@ -197,7 +198,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           automaticallyImplyLeading: false,
         );
-      case 4: // Favorite Page
+      case 4:
         return AppBar(
           backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
           title: const Row(
