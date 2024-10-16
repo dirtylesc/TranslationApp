@@ -43,6 +43,7 @@ class DBProvider {
           translated_text TEXT NOT NULL,
           target_language VARCHAR(5) NOT NULL,
           is_marked BOOLEAN DEFAULT FALSE,
+          is_deleted BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
@@ -52,7 +53,8 @@ class DBProvider {
 
   Future<Map<String, dynamic>?> getTranslation(int id) async {
     final db = await database;
-    return (await db.query('translations', where: 'id = ?', whereArgs: [id]))
+    return (await db.query('translations',
+            where: 'id = ? AND is_deleted = ?', whereArgs: [id, 0]))
         .firstOrNull;
   }
 
@@ -69,7 +71,8 @@ class DBProvider {
 
   Future<List<Map<String, dynamic>>> getTranslations() async {
     final db = await database;
-    return await db.query('translations');
+    return await db
+        .query('translations', where: 'is_deleted = ?', whereArgs: [0]);
   }
 
   Future<List<Map<String, dynamic>>> getFavorites() async {
@@ -80,6 +83,13 @@ class DBProvider {
 
   Future<void> deleteAllTranslations() async {
     final db = await database;
-    await db.delete('translations');
+    await db.delete('translations', where: 'is_marked = ?', whereArgs: [0]);
+    await db.update(
+        'translations',
+        {
+          'is_deleted': 1,
+        },
+        where: 'is_marked = ?',
+        whereArgs: [1]);
   }
 }

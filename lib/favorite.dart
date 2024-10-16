@@ -39,18 +39,13 @@ class _FavoritePageState extends State<FavoritePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: translations.isEmpty
-            ? Center(
+            ? const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'No translation history',
+                    Text(
+                      'No translation marked',
                       style: TextStyle(fontSize: 18),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _loadTranslations,
-                      child: const Text('Reload'),
                     ),
                   ],
                 ),

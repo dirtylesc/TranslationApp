@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:translation_app/components/language_text_row.dart';
 import 'package:translation_app/database.dart';
 
-void main() => runApp(const HistoryPage());
-
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
 
@@ -39,18 +37,13 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: translations.isEmpty
-            ? Center(
+            ? const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'No translation history',
                       style: TextStyle(fontSize: 18),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _loadTranslations,
-                      child: const Text('Reload'),
                     ),
                   ],
                 ),
