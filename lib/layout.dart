@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:translation_app/camera.dart';
+import 'package:translation_app/constants/languages.dart';
+import 'package:translation_app/constants/pageTabs.dart';
 import 'package:translation_app/database.dart';
 import 'package:translation_app/favorite.dart';
 import 'package:translation_app/history.dart';
 import 'package:translation_app/home.dart';
 
 class AppLayout extends StatefulWidget {
-  const AppLayout({super.key});
+  const AppLayout({super.key, PageTab? initPage});
+
+  PageTab? get initPage => homePageTab("", languages[0], languages[1]);
 
   @override
   _AppLayoutState createState() => _AppLayoutState();
@@ -14,11 +17,22 @@ class AppLayout extends StatefulWidget {
 
 class _AppLayoutState extends State<AppLayout> {
   int _selectedIndex = 0;
-  final List<Widget> _pages = [
-    const HomePage(),
-    const CameraPage(),
-    const SizedBox(),
-  ];
+  PageTab? _initPage;
+  final List<PageTab> _pageTabs = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pageTabs.addAll([
+      homePageTab("", languages[0], languages[1]),
+      cameraPageTab(_navigateToHome),
+      logoPageTab(),
+    ]);
+
+    _initPage = widget.initPage;
+    _selectedIndex = _initPage!.key;
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
@@ -30,6 +44,14 @@ class _AppLayoutState extends State<AppLayout> {
     (context as Element).markNeedsBuild();
 
     _setSelectedIndex(index);
+  }
+
+  void _navigateToHome(
+      String sourceText, Language sourceLanguage, Language targetLanguage) {
+    setState(() {
+      _pageTabs[0] = homePageTab(sourceText, sourceLanguage, targetLanguage);
+      _selectedIndex = 0;
+    });
   }
 
   void _setSelectedIndex(int index) {
@@ -45,13 +67,13 @@ class _AppLayoutState extends State<AppLayout> {
       body: IndexedStack(
         index: _selectedIndex == 3 || _selectedIndex == 4 ? 3 : _selectedIndex,
         children: [
-          ..._pages,
+          ..._pageTabs.map((tab) => tab.page),
           if (_selectedIndex == 3) const HistoryPage(),
           if (_selectedIndex == 4) const FavoritePage(),
         ],
       ),
       bottomNavigationBar: Container(
-          height: 80,
+          height: 70,
           decoration: const BoxDecoration(
             color: Colors.white,
             boxShadow: [
@@ -168,12 +190,6 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
           title: const Text('Camera'),
           titleTextStyle: const TextStyle(color: Colors.white),
           backgroundColor: const Color.fromRGBO(0, 51, 102, 1),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {},
-            ),
-          ],
         );
       case 3:
         return AppBar(
