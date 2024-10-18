@@ -1,34 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:translation_app/constants/languages.dart';
 import 'package:translation_app/database.dart';
 import 'package:translation_app/speech_to_text.dart';
 import 'package:translation_app/text_to_speech.dart';
 import 'package:translator/translator.dart';
 
-void main() => runApp(const HomePage());
+class HomePage extends StatefulWidget {
+  final String sourceText;
+  final Language sourceLanguage;
+  final Language targetLanguage;
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: TranslationHome(),
-      ),
-    );
-  }
-}
-
-class TranslationHome extends StatefulWidget {
-  const TranslationHome({super.key});
+  const HomePage(
+      {super.key,
+      this.sourceText = "",
+      required this.sourceLanguage,
+      required this.targetLanguage});
 
   @override
   _TranslationHomeState createState() => _TranslationHomeState();
 }
 
-class _TranslationHomeState extends State<TranslationHome> {
-  final TextEditingController _sourcecInputController = TextEditingController();
+class _TranslationHomeState extends State<HomePage> {
+  final TextEditingController _sourceInputController = TextEditingController();
   final translator = GoogleTranslator();
   final TTS _flutterTTS = TTS();
   final STT _flutterSTT = STT();
@@ -38,29 +32,28 @@ class _TranslationHomeState extends State<TranslationHome> {
   bool _isTranslated = false;
   bool _isVoiceStarting = false;
 
-  final List<Map<String, String>> _languages = [
-    {
-      'name': 'English',
-      'img': 'images/united-states-flag.png',
-      'code': 'en',
-      'language': 'en-US'
-    },
-    {
-      'name': 'Tiếng Việt',
-      'img': 'images/vietnam-flag.png',
-      'code': 'vi',
-      'language': 'vi-VN'
-    },
-    {
-      'name': '한글',
-      'img': 'images/korean-flag.png',
-      'code': 'ko',
-      'language': 'ko-KR'
-    },
-  ];
+  late Language _sourceLanguage = languages[0];
+  late Language _targetLanguage = languages[1];
 
-  late Map<String, String> _sourceLanguage = _languages[0];
-  late Map<String, String> _targetLanguage = _languages[1];
+  @override
+  void initState() {
+    super.initState();
+
+    _sourceLanguage = widget.sourceLanguage;
+    _targetLanguage = widget.targetLanguage;
+  }
+
+  @override
+  void didUpdateWidget(HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    setState(() {
+      _sourceInputController.text = widget.sourceText;
+      _sourceLanguage = widget.sourceLanguage;
+      _targetLanguage = widget.targetLanguage;
+      _translateText(widget.sourceText);
+    });
+  }
 
   Future<void> _translateText(String text) async {
     if (text.isEmpty) return;
@@ -69,19 +62,20 @@ class _TranslationHomeState extends State<TranslationHome> {
       _isTranslated = false;
     });
 
-    var translation = await translator.translate(_sourcecInputController.text,
-        from: _sourceLanguage['code']!, to: _targetLanguage['code']!);
+    var translation = await translator.translate(_sourceInputController.text,
+        from: _sourceLanguage.code, to: _targetLanguage.code);
 
     String bestTranslation = translation.text;
 
     int id = await DBProvider.db.insertTranslation({
-      'source_text': _sourcecInputController.text,
-      'source_language': _sourceLanguage['code'],
+      'source_text': _sourceInputController.text,
+      'source_language': _sourceLanguage.code,
       'translated_text': bestTranslation,
-      'target_language': _targetLanguage['code'],
+      'target_language': _targetLanguage.code,
     });
 
-    _currentTranslation = (await DBProvider.db.getTranslation(id))!;
+    // _currentTranslation = (await DBProvider.db.getTranslation(id))!;
+    _currentTranslation = {};
 
     setState(() {
       _translatedText = bestTranslation;
@@ -157,30 +151,30 @@ class _TranslationHomeState extends State<TranslationHome> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Image.asset(
-                        _sourceLanguage['img']!,
+                        _sourceLanguage.img,
                         width: 24,
                         height: 24,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: DropdownButton<Map<String, String>>(
+                        child: DropdownButton<Language>(
                           value: _sourceLanguage,
                           onChanged: (newValue) {
                             setState(() {
                               if (newValue != null &&
-                                  _targetLanguage['code'] == newValue['code']) {
+                                  _targetLanguage.code == newValue.code) {
                                 _targetLanguage = _sourceLanguage;
-                                _sourcecInputController.text = _translatedText;
+                                _sourceInputController.text = _translatedText;
                               }
                               _sourceLanguage = newValue!;
                               _translateText(_translatedText);
                             });
                           },
-                          items: _languages.map((language) {
-                            return DropdownMenuItem<Map<String, String>>(
+                          items: languages.map((language) {
+                            return DropdownMenuItem<Language>(
                               value: language,
                               child: Text(
-                                language['name']!,
+                                language.name,
                                 style: const TextStyle(
                                   fontSize: 16,
                                 ),
@@ -206,7 +200,7 @@ class _TranslationHomeState extends State<TranslationHome> {
                             _sourceLanguage = _targetLanguage;
                             _targetLanguage = temp;
 
-                            _sourcecInputController.text = _translatedText;
+                            _sourceInputController.text = _translatedText;
                             _translateText(_translatedText);
                           });
                         },
@@ -214,30 +208,30 @@ class _TranslationHomeState extends State<TranslationHome> {
                       ),
                       const SizedBox(width: 16),
                       Image.asset(
-                        _targetLanguage['img']!,
+                        _targetLanguage.img,
                         width: 24,
                         height: 24,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: DropdownButton<Map<String, String>>(
+                        child: DropdownButton<Language>(
                           value: _targetLanguage,
                           onChanged: (newValue) {
                             setState(() {
                               if (newValue != null &&
                                   _sourceLanguage == newValue) {
                                 _sourceLanguage = _targetLanguage;
-                                _sourcecInputController.text = _translatedText;
+                                _sourceInputController.text = _translatedText;
                               }
                               _targetLanguage = newValue!;
                               _translateText(_translatedText);
                             });
                           },
-                          items: _languages.map((language) {
-                            return DropdownMenuItem<Map<String, String>>(
+                          items: languages.map((language) {
+                            return DropdownMenuItem<Language>(
                               value: language,
                               child: Text(
-                                language['name']!,
+                                language.name,
                                 style: const TextStyle(
                                   fontSize: 16,
                                 ),
@@ -281,7 +275,7 @@ class _TranslationHomeState extends State<TranslationHome> {
                         children: [
                           Row(
                             children: [
-                              Text(_sourceLanguage['name']!,
+                              Text(_sourceLanguage.name,
                                   style: const TextStyle(
                                       color: Color.fromRGBO(0, 51, 102, 1),
                                       fontSize: 16,
@@ -291,16 +285,16 @@ class _TranslationHomeState extends State<TranslationHome> {
                                   color: const Color.fromRGBO(0, 51, 102, 1),
                                   icon: const Icon(Icons.volume_down_outlined),
                                   onPressed: () {
-                                    _voiceText(_sourcecInputController.text,
-                                        _sourceLanguage['language']);
+                                    _voiceText(_sourceInputController.text,
+                                        _sourceLanguage.language);
                                   })
                             ],
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
                             onPressed: () {
-                              if (_sourcecInputController.text.isNotEmpty) {
-                                _sourcecInputController.clear();
+                              if (_sourceInputController.text.isNotEmpty) {
+                                _sourceInputController.clear();
                               }
 
                               setState(() {
@@ -312,7 +306,7 @@ class _TranslationHomeState extends State<TranslationHome> {
                         ],
                       ),
                       TextField(
-                        controller: _sourcecInputController,
+                        controller: _sourceInputController,
                         maxLines: null,
                         minLines: 3,
                         decoration: const InputDecoration(
@@ -348,7 +342,7 @@ class _TranslationHomeState extends State<TranslationHome> {
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              _translateText(_sourcecInputController.text);
+                              _translateText(_sourceInputController.text);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
@@ -392,7 +386,7 @@ class _TranslationHomeState extends State<TranslationHome> {
                           children: [
                             Row(
                               children: [
-                                Text(_targetLanguage['name']!,
+                                Text(_targetLanguage.name,
                                     style: const TextStyle(
                                         color: Color.fromRGBO(0, 51, 102, 1),
                                         fontSize: 16,
@@ -403,7 +397,7 @@ class _TranslationHomeState extends State<TranslationHome> {
                                   icon: const Icon(Icons.volume_down_outlined),
                                   onPressed: () => {
                                     _voiceText(_translatedText,
-                                        _targetLanguage['language'])
+                                        _targetLanguage.language)
                                   },
                                 )
                               ],
