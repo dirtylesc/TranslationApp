@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:translation_app/constants/languages.dart';
-import 'package:translation_app/database.dart';
-import 'package:translation_app/speech_to_text.dart';
-import 'package:translation_app/text_to_speech.dart';
 import 'package:translator/translator.dart';
+
+import 'package:translation_app/database.dart';
+import 'package:translation_app/constants/languages.dart';
+import 'package:translation_app/components/speech_to_text.dart';
+import 'package:translation_app/components/text_to_speech.dart';
+import 'package:translation_app/components/language_changed_box.dart';
 
 class HomePage extends StatefulWidget {
   final String sourceText;
@@ -132,126 +134,9 @@ class _TranslationHomeState extends State<HomePage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(255, 251, 254, 1),
-                    borderRadius: BorderRadius.circular(50),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.15),
-                        spreadRadius: 1,
-                        blurRadius: 3,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Image.asset(
-                        _sourceLanguage.img,
-                        width: 24,
-                        height: 24,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DropdownButton<Language>(
-                          value: _sourceLanguage,
-                          onChanged: (newValue) {
-                            setState(() {
-                              if (newValue != null &&
-                                  _targetLanguage.code == newValue.code) {
-                                _targetLanguage = _sourceLanguage;
-                                _sourceInputController.text = _translatedText;
-                              }
-                              _sourceLanguage = newValue!;
-                              _translateText(_translatedText);
-                            });
-                          },
-                          items: languages.map((language) {
-                            return DropdownMenuItem<Language>(
-                              value: language,
-                              child: Text(
-                                language.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          isExpanded: true,
-                          underline: Container(
-                            height: 1,
-                            color: Colors.grey[400],
-                          ),
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            final temp = _sourceLanguage;
-                            _sourceLanguage = _targetLanguage;
-                            _targetLanguage = temp;
-
-                            _sourceInputController.text = _translatedText;
-                            _translateText(_translatedText);
-                          });
-                        },
-                        child: const Icon(Icons.swap_horiz, size: 24),
-                      ),
-                      const SizedBox(width: 16),
-                      Image.asset(
-                        _targetLanguage.img,
-                        width: 24,
-                        height: 24,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DropdownButton<Language>(
-                          value: _targetLanguage,
-                          onChanged: (newValue) {
-                            setState(() {
-                              if (newValue != null &&
-                                  _sourceLanguage == newValue) {
-                                _sourceLanguage = _targetLanguage;
-                                _sourceInputController.text = _translatedText;
-                              }
-                              _targetLanguage = newValue!;
-                              _translateText(_translatedText);
-                            });
-                          },
-                          items: languages.map((language) {
-                            return DropdownMenuItem<Language>(
-                              value: language,
-                              child: Text(
-                                language.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          isExpanded: true,
-                          underline: Container(
-                            height: 1,
-                            color: Colors.grey[400],
-                          ),
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                LanguageChangedBox(
+                    sourceLanguage: _sourceLanguage,
+                    targetLanguage: _targetLanguage),
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(16),
