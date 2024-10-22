@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:translation_app/constants/languages.dart';
 import 'package:translation_app/constants/pageTabs.dart';
 import 'package:translation_app/database.dart';
-import 'package:translation_app/favorite.dart';
-import 'package:translation_app/history.dart';
-import 'package:translation_app/home.dart';
+import 'package:translation_app/pages/favorite.dart';
+import 'package:translation_app/pages/history.dart';
 
 class AppLayout extends StatefulWidget {
   const AppLayout({super.key, PageTab? initPage});
