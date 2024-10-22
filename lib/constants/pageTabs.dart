@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:translation_app/camera.dart';
+import 'package:translation_app/pages/camera.dart';
 import 'package:translation_app/constants/languages.dart';
-import 'package:translation_app/home.dart';
+import 'package:translation_app/pages/home.dart';
 
 class PageTab {
   final int key;

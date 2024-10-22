@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:translation_app/layout.dart';
-import 'package:translation_app/splash.dart';
+import 'package:translation_app/layouts/layout.dart';
+import 'package:translation_app/pages/splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

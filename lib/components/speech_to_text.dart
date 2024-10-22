@@ -11,7 +11,7 @@ class STT {
   }
 
   Future _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize();
+    // _speechEnabled = await _speechToText.initialize();
   }
 
   Future startListening() async {
