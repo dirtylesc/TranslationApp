@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:translation_app/components/speech_to_text.dart';
 import 'package:translator/translator.dart';
 
 import 'package:translation_app/database.dart';
 import 'package:translation_app/constants/languages.dart';
-import 'package:translation_app/components/speech_to_text.dart';
 import 'package:translation_app/components/text_to_speech.dart';
 import 'package:translation_app/components/language_changed_box.dart';
 
@@ -27,12 +27,10 @@ class _TranslationHomeState extends State<HomePage> {
   final TextEditingController _sourceInputController = TextEditingController();
   final translator = GoogleTranslator();
   final TTS _flutterTTS = TTS();
-  final STT _flutterSTT = STT();
 
   String _translatedText = '';
   late Map<String, dynamic> _currentTranslation;
   bool _isTranslated = false;
-  bool _isVoiceStarting = false;
 
   late Language _sourceLanguage = languages[0];
   late Language _targetLanguage = languages[1];
@@ -118,12 +116,10 @@ class _TranslationHomeState extends State<HomePage> {
     await _flutterTTS.speak(text, language);
   }
 
-  Future<void> _textVoice() async {
+  Future<void> _handleTextChanged(String newText) async {
     setState(() {
-      _isVoiceStarting = !_isVoiceStarting;
+      _sourceInputController.text = newText;
     });
-
-    await _flutterSTT.startListening();
   }
 
   @override
@@ -208,22 +204,11 @@ class _TranslationHomeState extends State<HomePage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          InkWell(
-                            onTap: () {
-                              _textVoice();
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                  color: _isVoiceStarting
-                                      ? Colors.red
-                                      : const Color.fromRGBO(0, 51, 102, 1),
-                                  borderRadius: BorderRadius.circular(100)),
-                              child: Icon(
-                                color: Colors.white,
-                                _isVoiceStarting ? Icons.square : Icons.mic,
-                              ),
-                            ),
+                          Stt(
+                            onListened: _handleTextChanged,
+                            onStopped: () =>
+                                _translateText(_sourceInputController.text),
+                            sourceLanguage: _sourceLanguage.language,
                           ),
                           ElevatedButton(
                             onPressed: () {
