@@ -115,7 +115,7 @@ class _AppLayoutState extends State<AppLayout> {
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.star),
-                      label: 'Favourite',
+                      label: 'Favorite',
                     ),
                   ],
                   currentIndex: _selectedIndex,
