@@ -1,126 +1,124 @@
-import 'dart:developer';
+import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:translation_app/pages/home.dart';
+import 'package:translation_app/constants/languages.dart';
+import 'package:translation_app/components/helper.dart';
+import 'package:translation_app/components/language_changed_box.dart';
 
-class TrueCallerOverlay extends StatefulWidget {
-  const TrueCallerOverlay({Key? key}) : super(key: key);
+class TranslationOverlay extends StatefulWidget {
+  const TranslationOverlay({super.key});
 
   @override
-  State<TrueCallerOverlay> createState() => _TrueCallerOverlayState();
+  State<TranslationOverlay> createState() => _TranslationOverlayState();
 }
 
-class _TrueCallerOverlayState extends State<TrueCallerOverlay> {
-  bool isGold = true;
-
-  final _goldColors = const [
-    Color(0xFFa2790d),
-    Color(0xFFebd197),
-    Color(0xFFa2790d),
-  ];
-
-  final _silverColors = const [
-    Color(0xFFAEB2B8),
-    Color(0xFFC7C9CB),
-    Color(0xFFD7D7D8),
-    Color(0xFFAEB2B8),
-  ];
+class _TranslationOverlayState extends State<TranslationOverlay> {
+  static GlobalKey previewContainer = GlobalKey();
+  bool _isFullScreen = false;
+  String _sourceText = "";
 
   @override
   void initState() {
     super.initState();
   }
 
+  void _translateCurrentScreen() {
+    _showHomeOverlay();
+    // _takeScreenShot();
+    setState(() {
+      _isFullScreen = !_isFullScreen;
+    });
+  }
+
+  void _showHomeOverlay() async {
+    await FlutterOverlayWindow.moveOverlay(const OverlayPosition(10, 25));
+    await FlutterOverlayWindow.resizeOverlay(400, 875, true);
+  }
+
+  Future<void> _takeScreenShot() async {
+    try {
+      final boundary = previewContainer.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
+      final image = await boundary.toImage();
+
+      final directory = (await getApplicationDocumentsDirectory()).path;
+
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+      final pngBytes = byteData?.buffer.asUint8List();
+
+      if (pngBytes != null) {
+        final imgFile = File('$directory/screenshot.png');
+        await imgFile.writeAsBytes(pngBytes);
+
+        await _recognizingText(InputImage.fromFile(imgFile));
+      } else {
+        print('Failed to convert image to bytes.');
+      }
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
+  }
+
+  Future<void> _recognizingText(InputImage img) async {
+    final textRecognizer = TextRecognizer();
+    final RecognizedText recognizedText =
+        await textRecognizer.processImage(img);
+
+    setState(() {
+      _sourceText = recognizedText.text;
+    });
+
+    textRecognizer.close();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12.0),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isGold ? _goldColors : _silverColors,
-            ),
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                isGold = !isGold;
-              });
-              FlutterOverlayWindow.getOverlayPosition().then((value) {
-                log("Overlay Position: $value");
-              });
-            },
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    ListTile(
-                      leading: Container(
-                        height: 80.0,
-                        width: 80.0,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black54),
-                          shape: BoxShape.circle,
-                          image: const DecorationImage(
-                            image: NetworkImage(
-                                "https://api.multiavatar.com/x-slayer.png"),
-                          ),
-                        ),
-                      ),
-                      title: const Text(
-                        "X-SLAYER",
-                        style: TextStyle(
-                            fontSize: 20.0, fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: const Text("Sousse , Tunisia"),
-                    ),
-                    const Spacer(),
-                    const Divider(color: Colors.black54),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("+216 21065826"),
-                              Text("Last call - 1 min ago"),
-                            ],
-                          ),
-                          Text(
-                            "Flutter Overlay",
-                            style: TextStyle(
-                                fontSize: 15.0, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: IconButton(
-                    onPressed: () async {
-                      await FlutterOverlayWindow.closeOverlay();
-                    },
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.black,
-                    ),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // RepaintBoundary(
+          //   key: previewContainer,
+          //   child: const Center(
+          //     child: Text('This is the content to capture.',
+          //         style: TextStyle(fontSize: 24)),
+          //   ),
+          // ),
+          Positioned.fill(
+              child: Container(
+                  color: Colors.white,
+                  child: LanguageChangedBox(
+                      sourceLanguage: languages[0],
+                      targetLanguage: languages[1])
+                  // HomePage(
+                  //     sourceText: _sourceText,
+                  //     sourceLanguage: languages[0],
+                  //     targetLanguage: languages[1])
+                  )),
+          Positioned(
+            child: ClipOval(
+              child: Center(
+                widthFactor: 1.0,
+                heightFactor: 1.0,
+                child: FloatingActionButton(
+                  onPressed: _translateCurrentScreen,
+                  backgroundColor: Colors.blueAccent,
+                  child: const Icon(
+                    Icons.translate,
+                    color: Colors.white,
+                    size: 38,
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

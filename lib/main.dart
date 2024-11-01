@@ -1,32 +1,29 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:translation_app/database.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-import 'package:translation_app/components/overlay.dart';
+import 'package:translation_app/database.dart';
 import 'package:translation_app/layouts/layout.dart';
 import 'package:translation_app/pages/splash.dart';
-
-@pragma("vm:entry-point")
-void overlayMain() {
-  runApp(const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Material(child: Text("My overlay"))));
-}
+import 'package:translation_app/components/overlay.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final bool status = await FlutterOverlayWindow.isPermissionGranted();
+  if (!status) await FlutterOverlayWindow.requestPermission();
   await DBProvider.db.database;
   return runApp(const TranslationApp());
 }
 
 @pragma("vm:entry-point")
 void overlayMain() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    const MaterialApp(
+  runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TrueCallerOverlay(),
-    ),
-  );
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.transparent,
+      ),
+      home: TranslationOverlay()));
 }
 
 class TranslationApp extends StatefulWidget {
@@ -39,16 +36,15 @@ class TranslationApp extends StatefulWidget {
 class _TranslationAppState extends State<TranslationApp>
     with WidgetsBindingObserver {
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-
-    await FlutterOverlayWindow.requestPermission();
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _removeOverlay();
     super.dispose();
   }
 
@@ -63,16 +59,24 @@ class _TranslationAppState extends State<TranslationApp>
 
   void _showOverlay() async {
     if (await FlutterOverlayWindow.isActive()) return;
+    final bool status = await FlutterOverlayWindow.isPermissionGranted();
+    if (!status) {
+      await FlutterOverlayWindow.requestPermission();
+    }
+    final windowSize = window.physicalSize;
+
+    final height = windowSize.height / window.devicePixelRatio;
     await FlutterOverlayWindow.showOverlay(
+      alignment: OverlayAlignment.centerRight,
       enableDrag: true,
       overlayTitle: "X-SLAYER",
       overlayContent: 'Overlay Enabled',
       flag: OverlayFlag.defaultFlag,
       visibility: NotificationVisibility.visibilityPublic,
       positionGravity: PositionGravity.auto,
-      height: (MediaQuery.of(context).size.height * 0.6).toInt(),
-      width: WindowSize.matchParent,
-      startPosition: const OverlayPosition(0, -259),
+      height: 120,
+      width: 120,
+      startPosition: OverlayPosition(0, -height / 2 + 50),
     );
   }
 
