@@ -10,7 +10,7 @@ import flutter_tts
 import path_provider_foundation
 import photo_manager
 import speech_to_text
-import sqflite_darwin
+import sqflite
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))

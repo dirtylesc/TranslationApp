@@ -30,17 +30,21 @@ class LanguageTextRow extends StatelessWidget {
           const SizedBox(
             width: 8,
           ),
-          Text(
-            text,
-            style: TextStyle(
-              color: isTranslatedText
-                  ? const Color.fromRGBO(255, 102, 0, 1)
-                  : const Color.fromRGBO(0, 51, 102, 1),
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              fontStyle: isTranslatedText ? FontStyle.italic : FontStyle.normal,
+          Expanded(
+            child: Text(
+              softWrap: true,
+              text,
+              style: TextStyle(
+                color: isTranslatedText
+                    ? const Color.fromRGBO(255, 102, 0, 1)
+                    : const Color.fromRGBO(0, 51, 102, 1),
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                fontStyle:
+                    isTranslatedText ? FontStyle.italic : FontStyle.normal,
+              ),
             ),
-          ),
+          )
         ],
       ),
     );

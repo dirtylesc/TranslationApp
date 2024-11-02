@@ -19,7 +19,7 @@ class TranslationApp extends StatefulWidget {
 class _TranslationAppState extends State<TranslationApp>
     with WidgetsBindingObserver {
   @override
-  void initState() async {
+  void initState() {
     super.initState();
   }
 

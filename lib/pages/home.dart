@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:translation_app/components/language_changed_box.dart';
 import 'package:translation_app/components/speech_to_text.dart';
 import 'package:translation_app/components/text_to_speech.dart';
@@ -74,8 +73,7 @@ class _TranslationHomeState extends State<HomePage> {
       'target_language': _targetLanguage.code,
     });
 
-    // _currentTranslation = (await DBProvider.db.getTranslation(id))!;
-    _currentTranslation = {};
+    _currentTranslation = (await DBProvider.db.getTranslation(id))!;
 
     setState(() {
       _translatedText = bestTranslation;
@@ -122,25 +120,6 @@ class _TranslationHomeState extends State<HomePage> {
     });
   }
 
-  void _initOverlay() async {
-    if (await FlutterOverlayWindow.isActive()) return;
-    final bool status = await FlutterOverlayWindow.isPermissionGranted();
-    if (!status) {
-      await FlutterOverlayWindow.requestPermission();
-    }
-    await FlutterOverlayWindow.showOverlay(
-      enableDrag: true,
-      overlayTitle: "X-SLAYER",
-      overlayContent: 'Overlay Enabled',
-      flag: OverlayFlag.defaultFlag,
-      visibility: NotificationVisibility.visibilityPublic,
-      positionGravity: PositionGravity.auto,
-      height: (MediaQuery.of(context).size.height * 0.6).toInt(),
-      width: WindowSize.matchParent,
-      startPosition: const OverlayPosition(0, -259),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,14 +128,6 @@ class _TranslationHomeState extends State<HomePage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _initOverlay();
-                    },
-                    child: Text("Khởi Động Dịch Màn Hình"),
-                  ),
-                ),
                 LanguageChangedBox(
                     sourceLanguage: _sourceLanguage,
                     targetLanguage: _targetLanguage),
